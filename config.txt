@@ -1,0 +1,143 @@
+
+
+
+
+
+-------------------------------feign starts-------------------------------------
+@EnableFeignClients --bootstarp class
+@FeignClient(name=app_name) --interface
+
+<dependency>
+	<groupId>org.springframework.cloud</groupId>
+	<artifactId>spring-cloud-starter-openfeign</artifactId>
+</dependency>
+-------------------------------feign ends---------------------------------------
+
+
+
+-------------------------------ribbon starts-------------------------------------
+@RibbonClient(name=app_name) --feign interface
+
+<dependency>
+	<groupId>org.springframework.cloud</groupId>
+	<artifactId>spring-cloud-starter-netflix-ribbon</artifactId>
+</dependency>
+
+review-service:
+  ribbon:
+    listOfServers: http://localhost:9000, http://localhost:9001, http://localhost:9002
+    #ServerListRefreshInterval: 3000
+
+#default timeout 1 sec can be changed by below property	
+ribbon:
+  ReadTimeout: 10000
+  connection-timeout: 10000
+-------------------------------ribbon ends---------------------------------------
+
+
+
+-------------------------------eureka starts-------------------------------------
+@EnableEurekaServer --bootstarp class
+@EnableEurekaClient --bootstarp class
+
+<dependency>
+	<groupId>org.springframework.cloud</groupId>
+	<artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+</dependency>
+
+<dependency>
+	<groupId>org.springframework.cloud</groupId>
+	<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+</dependency>
+
+eureka:
+  instance:
+    hostname: localhost
+    instance-id: ${spring.application.name}.${random.value}
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultMap: http://localhost:8761/eureka
+-------------------------------eureka ends---------------------------------------
+
+
+
+
+-------------------------------Hystrix starts---------------------------------------
+@EnableCircuitBreaker --bootstarp class
+@HystrixCommand --fallback method in @Component class
+<dependency>
+	<groupId>org.springframework.cloud</groupId>
+	<artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
+</dependency>
+
+#default timeout 1 sec can be changed by below property
+hystrix:
+  command.default.execution.isolation.thread.timeoutInMilliseconds: 5000
+
+with Feign
+@FeingClient(fallback = .class, fallbackFactory= .class)
+fallback implements feign interface 
+fallbackFactory implements FallbackFactory<feign interface> and return anonymous class instance of feign interface in the overrided method
+feign:
+  hystrix:
+    enabled: true
+-------------------------------Hystrix ends---------------------------------------
+
+
+
+-------------------------------Hystrix dashboard starts---------------------------------------
+@EnableHystrixDashboard --bootstarp class
+
+hystrix:
+  dashboard:
+    proxy-stream-allow-list: "*"
+
+
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+<dependency>
+	<groupId>org.springframework.cloud</groupId>
+	<artifactId>spring-cloud-starter-netflix-hystrix-dashboard</artifactId>
+</dependency>
+
+
+http://localhost:8000/hystrix --UI
+http://localhost:8000/actuator/hystrix.stream  --actuator stream
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: hystrix.stream	
+-------------------------------Hystrix dashboard ends---------------------------------------
+
+
+
+-------------------------------zuul starts-------------------------------------
+@EnableZuulProxy  --bootstarp class
+@EnableEurekaClient  --bootstarp class
+
+<dependency>
+	<groupId>org.springframework.cloud</groupId>
+	<artifactId>spring-cloud-starter-netflix-zuul</artifactId>
+</dependency>
+<dependency>
+	<groupId>org.springframework.cloud</groupId>
+	<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+</dependency>
+
+
+--services
+@Configuration --> on class extends WebSecurityConfigurerAdapter
+@EnableWebSecurity --> on class extends WebSecurityConfigurerAdapter
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+-------------------------------zuul ends---------------------------------------
+
